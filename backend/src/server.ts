@@ -1,9 +1,11 @@
-import express, { type Request, type Response } from 'express';
+import express, { type Request, type Response, type NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'node:path';
 import fs from 'node:fs';
-import { registerRoutes } from './routes';
+import { formatRoutes } from './routes/formatRoutes';
+import { lookupRoutes } from './routes/lookupRoutes';
+import { AppError } from './errors/AppError';
 
 // Load env from package dir or root .env.local (for local dev)
 dotenv.config();
@@ -21,7 +23,26 @@ app.use(
   })
 );
 
-registerRoutes(app);
+// Health
+app.get('/api/health', (_req: Request, res: Response) => {
+  res.json({ data: { status: 'ok', timestamp: new Date().toISOString() } });
+});
+
+// API routes
+app.use(formatRoutes);
+app.use(lookupRoutes);
+
+// Global error handler
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+  if (err && typeof err === 'object' && 'code' in (err as any)) {
+    const e = err as AppError;
+    return res.status(e.status).json({ error: { code: e.code, message: e.message, details: e.details } });
+  }
+  // eslint-disable-next-line no-console
+  console.error(err);
+  return res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Internal server error' } });
+});
 
 // Serverless export (Vercel will use this as the request handler)
 export default app;

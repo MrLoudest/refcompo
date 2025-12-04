@@ -1,7 +1,5 @@
-import { describe, it, expect } from 'vitest';
-
 describe('backend smoke', () => {
-  it('works', () => {
+  test('works', () => {
     expect(true).toBe(true);
   });
 });
