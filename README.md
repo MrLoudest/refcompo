@@ -67,6 +67,25 @@ VITE_SUPABASE_URL=https://YOUR-PROJECT-REF.supabase.co
 VITE_SUPABASE_ANON_KEY=YOUR_ANON_KEY
 ```
 
+Recommended `.env.example` files (commit these; never commit `.env.local`):
+
+root `.env.example`
+```
+FRONTEND_URL=http://localhost:5173
+BACKEND_URL=http://localhost:3001
+GOOGLE_BOOKS_API_KEY=
+CROSSREF_API_URL=https://api.crossref.org/works
+```
+
+frontend `.env.example`
+```
+VITE_BACKEND_URL=http://localhost:3001
+VITE_FRONTEND_URL=http://localhost:5173
+# Optional when enabling Supabase:
+# VITE_SUPABASE_URL=
+# VITE_SUPABASE_ANON_KEY=
+```
+
 ## Deployment
 
 - Frontend: Vercel static site using Vite build (`dist/`), configured in `frontend/vercel.json`.
@@ -92,5 +111,30 @@ import type { ApiResponse } from '@refcompo/shared';
   - `https://YOUR-PROJECT-REF.supabase.co/auth/v1/callback`
 - Add the two `VITE_SUPABASE_*` variables to the frontend (local + Vercel).
 - In dev, the Home page has a “Continue with Google” button using these variables.
+
+## Vercel Setup (Monorepo)
+
+Frontend Project
+- Root Directory: `frontend`
+- Framework: Vite
+- Node: 22
+- Install: `cd .. && npm ci`
+- Build: `cd .. && npm run build -w frontend`
+- Output: `dist`
+- Env:
+  - `VITE_BACKEND_URL=https://YOUR-BACKEND.vercel.app`
+  - `VITE_FRONTEND_URL=https://YOUR-FRONTEND.vercel.app`
+
+Backend Project
+- Root Directory: `backend`
+- Framework: Other (Node)
+- Node: 22
+- Install: `cd .. && npm ci`
+- Build: `true`
+- Env:
+  - `FRONTEND_URL=https://YOUR-FRONTEND.vercel.app`
+  - `BACKEND_URL=https://YOUR-BACKEND.vercel.app`
+  - `GOOGLE_BOOKS_API_KEY=...`
+  - `CROSSREF_API_URL=https://api.crossref.org/works`
 
 
