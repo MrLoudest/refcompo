@@ -4,13 +4,18 @@ import { cn } from '../../utils/strings';
 type Props = InputHTMLAttributes<HTMLInputElement> & {
   label?: string;
   error?: string;
+  tooltip?: string;
 };
 
-export function Input({ label, error, className, id, ...props }: Props) {
+export function Input({ label, error, className, id, tooltip, ...props }: Props) {
   const inputId = id || props.name || `field-${Math.random().toString(36).slice(2)}`;
   return (
     <label htmlFor={inputId} className="block space-y-1">
-      {label && <span className="text-sm text-slate-700">{label}</span>}
+      {label && (
+        <span className="text-sm text-slate-700" title={tooltip}>
+          {label}
+        </span>
+      )}
       <input
         id={inputId}
         className={cn(

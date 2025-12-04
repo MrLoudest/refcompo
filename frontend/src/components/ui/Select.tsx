@@ -4,13 +4,18 @@ import { cn } from '../../utils/strings';
 type Props = SelectHTMLAttributes<HTMLSelectElement> & {
   label?: string;
   error?: string;
+  tooltip?: string;
 };
 
-export function Select({ label, error, className, id, children, ...props }: Props) {
+export function Select({ label, error, className, id, children, tooltip, ...props }: Props) {
   const inputId = id || props.name || `field-${Math.random().toString(36).slice(2)}`;
   return (
     <label htmlFor={inputId} className="block space-y-1">
-      {label && <span className="text-sm text-slate-700">{label}</span>}
+      {label && (
+        <span className="text-sm text-slate-700" title={tooltip}>
+          {label}
+        </span>
+      )}
       <select
         id={inputId}
         className={cn(

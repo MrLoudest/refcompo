@@ -6,23 +6,91 @@ import { Modal } from '../components/ui/Modal';
 import { useToast } from '../components/ui/Toast';
 import { useReferenceStore, type ReferenceItem } from '../state/referenceStore';
 import { formatCitationPreview } from '../utils/formatting';
+import { apiFormatReference } from '../api/appApi';
 
 export default function ReferenceList() {
   const { toast } = useToast();
   const { items, update, remove, move, clear } = useReferenceStore();
   const [editing, setEditing] = useState<ReferenceItem | null>(null);
   const [toDelete, setToDelete] = useState<ReferenceItem | null>(null);
+  const [livePreview, setLivePreview] = useState<string>('');
+  // refresh preview when editing changes
+  useMemo(() => {
+    if (!editing) {
+      setLivePreview('');
+      return null;
+    }
+    (async () => {
+      const res = await apiFormatReference({
+        style: editing.style,
+        metadata: {
+          sourceType: editing.sourceType,
+          title: editing.title,
+          authors: editing.authors.map((a) => {
+            const [family, given] = a.split(',').map((s) => s.trim());
+            return { family: family || a, given };
+          }),
+          year: editing.year,
+          publisher: editing.publisher,
+          journal: editing.journal,
+          volume: editing.volume,
+          issue: editing.issue,
+          pages: editing.pages,
+          doi: editing.doi,
+          url: editing.url
+        }
+      });
+      setLivePreview(res.formatted.reference);
+    })();
+    return null;
+  }, [editing]);
 
   const exports = useMemo(() => {
-    const text = items.map((it) => formatCitationPreview(it)).join('\n');
-    const json = JSON.stringify(items, null, 2);
-    const bib = items
+    const sorted = [...items].sort((a, b) => {
+      const aKey = (a.authors[0]?.split(',')[0] || a.title).toLowerCase();
+      const bKey = (b.authors[0]?.split(',')[0] || b.title).toLowerCase();
+      return aKey.localeCompare(bKey);
+    });
+    const text = sorted.map((it) => formatCitationPreview(it)).join('\n');
+    const json = JSON.stringify(sorted, null, 2);
+    const bib = sorted
       .map(
         (it, i) =>
           `@article{ref${i + 1},\n  title={${it.title}},\n  author={${it.authors.join(' and ')}},\n  year={${it.year || 'n.d.'}},\n  journal={${it.journal || ''}},\n  volume={${it.volume || ''}},\n  number={${it.issue || ''}},\n  pages={${it.pages || ''}},\n  doi={${it.doi || ''}},\n  url={${it.url || ''}}\n}`
       )
       .join('\n\n');
-    return { text, json, bib };
+    const ris = sorted
+      .map((it) => {
+        const [sp, ep] = (it.pages || '').split(/[-–]/);
+        const ty =
+          it.sourceType === 'journal'
+            ? 'JOUR'
+            : it.sourceType === 'book'
+            ? 'BOOK'
+            : it.sourceType === 'website'
+            ? 'ELEC'
+            : 'GEN';
+        const au = it.authors.map((a) => `AU  - ${a}`).join('\n');
+        return [
+          `TY  - ${ty}`,
+          `TI  - ${it.title}`,
+          au,
+          it.year ? `PY  - ${it.year}` : '',
+          it.journal ? `JO  - ${it.journal}` : '',
+          it.volume ? `VL  - ${it.volume}` : '',
+          it.issue ? `IS  - ${it.issue}` : '',
+          sp ? `SP  - ${sp}` : '',
+          ep ? `EP  - ${ep}` : '',
+          it.doi ? `DO  - ${it.doi}` : '',
+          it.url ? `UR  - ${it.url}` : '',
+          'ER  - '
+        ]
+          .filter(Boolean)
+          .join('\n');
+      })
+      .join('\n\n');
+    const allCopy = text;
+    return { text, json, bib, ris, allCopy };
   }, [items]);
 
   function copy(str: string, label: string) {
@@ -45,6 +113,12 @@ export default function ReferenceList() {
           </Button>
           <Button variant="secondary" onClick={() => copy(exports.bib, 'BibTeX')}>
             Export BibTeX
+          </Button>
+          <Button variant="secondary" onClick={() => copy(exports.ris, 'RIS')}>
+            Export RIS
+          </Button>
+          <Button onClick={() => copy(exports.allCopy, 'all references')}>
+            Copy all
           </Button>
           <Button variant="ghost" onClick={clear}>
             Clear all
@@ -110,6 +184,9 @@ export default function ReferenceList() {
               <Input label="Pages" value={editing.pages} onChange={(e) => update(editing.id, { pages: e.target.value })} />
               <Input label="DOI" value={editing.doi} onChange={(e) => update(editing.id, { doi: e.target.value })} />
               <Input label="URL" value={editing.url} onChange={(e) => update(editing.id, { url: e.target.value })} />
+            </div>
+            <div className="rounded border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
+              {livePreview}
             </div>
           </div>
         )}

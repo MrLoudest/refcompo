@@ -10,7 +10,9 @@ export type SourceType =
   | 'conference'
   | 'report'
   | 'thesis'
-  | 'chapter';
+  | 'chapter'
+  | 'video'
+  | 'podcast';
 
 export type ReferenceItem = {
   id: string;

@@ -10,7 +10,7 @@ export default function Home() {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['health'],
     queryFn: async () => {
-      const res = await apiClient.get<ApiResponse<Health>>('/health');
+      const res = await apiClient.get<ApiResponse<Health>>('/api/health');
       return res.data;
     }
   });
