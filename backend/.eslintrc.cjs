@@ -13,8 +13,12 @@ module.exports = {
     'prettier'
   ],
   rules: {
+    '@typescript-eslint/no-unused-vars': [
+      'warn',
+      { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
+    ],
     'import/order': [
-      'error',
+      'warn',
       {
         'newlines-between': 'always',
         groups: [['builtin', 'external', 'internal'], ['parent', 'sibling', 'index']],

@@ -17,8 +17,9 @@ module.exports = {
   ],
   settings: { react: { version: 'detect' } },
   rules: {
+    'react/react-in-jsx-scope': 'off',
     'import/order': [
-      'error',
+      'warn',
       {
         'newlines-between': 'always',
         groups: [['builtin', 'external', 'internal'], ['parent', 'sibling', 'index']],
