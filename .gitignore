@@ -23,4 +23,6 @@ frontend/src/**/*.d.ts
 shared/src/**/*.js
 shared/src/**/*.d.ts
 frontend/vite.config.js
+*.tsbuildinfo
+**/*.tsbuildinfo
 
