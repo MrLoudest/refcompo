@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "moduleResolution": "Bundler",
+    "noEmit": false,
+    "resolveJsonModule": true
+  },
+  "include": ["src", "api", "vitest.config.ts"]
+}
+
+
